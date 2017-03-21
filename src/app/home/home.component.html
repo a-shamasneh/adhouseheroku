@@ -1,0 +1,45 @@
+ <section class="jumbotron text-center">
+      <div class="container">
+        <h1 class="jumbotron-heading">AdHouse </h1>
+        <p class="lead text-muted">One place, all your needs</p>
+         
+        <p class = "button">
+          <a href="#" class="btn btn-primary">Choose category</a>
+          <select  [(ngModel)]="term" class="btn btn-secondary" >
+
+         <option  *ngFor="let cat of catgs ">{{cat}}</option>
+        </select>
+          
+        </p>
+      </div>
+    </section>
+
+    <div class="album text-muted">
+      <div class="container">
+
+        <div class="row">
+          <div  class="col-md-4" *ngFor="let ad of alladds | filter: term"  >
+            <img data-src="{{ad.ad_img}}" alt="Card image cap">
+
+            <div class="card-text">
+                <div class="media-heading">{{ad.ad_date}}</div>
+                <div>Category : {{ad.ad_cat}}</div>
+                <div>Location: {{ad.ad_loc}}</div>
+                <div>Description: {{ad.ad_desc}}</div>
+                <div> Contact : {{ad.ad_phone}}</div>
+                <li>
+      <a  class="navbar-brand" href="#" (click) = "advertId(ad._id)"       
+      [routerLink]="['/advertisment/'+ad._id]"  >Comments</a>
+                </li>
+                <br>
+            </div>
+
+          </div>
+        </div>
+    </div>
+    </div>
+
+
+
+
+
