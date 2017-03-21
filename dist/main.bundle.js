@@ -1468,7 +1468,7 @@ module.exports = module.exports.toString();
 /***/ 545:
 /***/ (function(module, exports) {
 
-module.exports = "\r\n  <div class=\"container\">\r\n  <table class=\"table\">\r\n    <thead>\r\n      <tr>\r\n        <th>Image</th>\r\n        <th>Description</th>\r\n        <th>Phone</th>\r\n        <th>option</th>\r\n      </tr>\r\n    </thead>\r\n    <tbody *ngFor=\"let add of Adds\">\r\n      <tr>\r\n        <td><img src=\"{{add.ad_img}}\" class=\"img-responsive\"></td>\r\n        <td>{{add.ad_desc}}</td>\r\n        <td>{{add.ad_phone}}</td>\r\n        <td>\r\n\t        <button class=\"btn btn-danger btn-sm\" (click)=\"Reject(add._id)\">Reject</button> \r\n\t\t\t<button class=\"btn btn-success btn-sm\" (click)=\"Approve(add._id)\">Approve</button>\r\n\t\t</td>\r\n      </tr>\r\n      \r\n    </tbody>\r\n  </table>\r\n</div>"
+module.exports = "<br><br>\r\n  <div class=\"container\">\r\n  <table class=\"table\">\r\n    <thead>\r\n      <tr>\r\n        <th>Image</th>\r\n        <th>Description</th>\r\n        <th>Phone</th>\r\n        <th>option</th>\r\n      </tr>\r\n    </thead>\r\n    <tbody *ngFor=\"let add of Adds\">\r\n      <tr>\r\n        <td><img src=\"{{add.ad_img}}\" class=\"img-responsive\"></td>\r\n        <td>{{add.ad_desc}}</td>\r\n        <td>{{add.ad_phone}}</td>\r\n        <td>\r\n\t        <button class=\"btn btn-danger btn-sm\" (click)=\"Reject(add._id)\">Reject</button> \r\n\t\t\t<button class=\"btn btn-success btn-sm\" (click)=\"Approve(add._id)\">Approve</button>\r\n\t\t</td>\r\n      </tr>\r\n      \r\n    </tbody>\r\n  </table>\r\n</div>"
 
 /***/ }),
 
