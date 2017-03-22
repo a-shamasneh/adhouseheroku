@@ -29,3 +29,20 @@
     font-size: 25px;
     font-family: cursive;
 }
+.apiinfo{
+      background-color: #d9dee2;
+}
+.maininfo{
+      font-size: larger;
+    font-family: cursive;
+    color: black;
+}
+ol{
+      color: #10100d;
+    font-size: large;
+    font-family: cursive;
+
+}
+span{
+  color: crimson
+}

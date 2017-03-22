@@ -7,7 +7,7 @@ require('./server/config/routes.js') (app,express);
 //=============================================================================
 /*									Database								 */
 //=============================================================================
-	var mongoURI ="mongodb://localhost/house";
+	var mongoURI ="mongodb://mais:1234@ds019866.mlab.com:19866/adhouse";
 	mongoose.connect(mongoURI);
 	db = mongoose.connection;
 
