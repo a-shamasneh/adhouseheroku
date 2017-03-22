@@ -1,57 +1,95 @@
+ <br>
+    <br>
+    <div class="album text-muted">
+      <div class="container">
         <div class="row">
-          <div  class="col-md-4" *ngFor="let ad of advdata"  >
-            <img class = "img" data-src="{{ad.ad_img}}" >
-            <p class="card-text">
-                <span class="media-heading">{{ad.ad_date}}</span>
-                <br>
-                <span>Category : {{ad.ad_cat}}</span>
-                <br>
-                <span>Location: {{ad.ad_loc}}</span>
-                <br>
-                <span>Description: {{ad.ad_desc}}</span>
-                <br>
-                <span> Contact : {{ad.ad_phone}}</span>
-                <br>
-            </p>
+        <div class="col-md-3"></div>
+          <div  class="col-md-6 center" *ngFor="let ad of  advdata"  >
+            <img class = "img imgadv" data-src="{{ad.ad_img}}" >
+             <span>
+                 Average Rating : {{AvgRating}}
+              </span>
+              <br>
+  <input id="rating-5" type="radio" [(ngModel)] = "val" value="5" (click) = "insertRateAdv(ad._id,5)"> 5 &nbsp;
+  <input id="rating-4" type="radio" [(ngModel)] = "val" value="4" (click) = "insertRateAdv(ad._id,4)"> 4 &nbsp;
+  <input id="rating-3" type="radio" [(ngModel)] = "val" value="3" (click) = "insertRateAdv(ad._id,3)"> 3 &nbsp;
+  <input id="rating-2" type="radio" [(ngModel)] = "val" value="2" (click) = "insertRateAdv(ad._id,2)"> 2 &nbsp;
+  <input id="rating-1" type="radio" [(ngModel)] = "val" value="1" (click) = "insertRateAdv(ad._id,1)"> 1 &nbsp;
+              <br>
+
+                <p>Posted date: {{ad.ad_date}}</p>
+                <p class="desc">Category : {{ad.ad_cat}}</p>
+                <p class="desc">Location: {{ad.ad_loc}}</p>
+                <p class="desc">
+                  
+                
+                  
+                  Description: {{ad.ad_desc}}</p>
+                
+                  
+                <p class="desc"> Contact : {{ad.ad_phone}}</p>
           </div>
+         <div class="col-md-3"></div>
         </div>
-                <br>
-                <br>
-                <br>
-                <br>
+                
+                </div>
+                </div>
+                <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6">
+                       <div class="col-md-3"></div>
+                     <div class="detailBox">
+    <div class="titleBox">
+      <label>Comment Box</label>
+        <button type="button" class="close" aria-hidden="true">&times;</button>
 
-        <div class="row">
-          <div  class="col-md-9" *ngFor="let comm of comments">
-          <ul>
-          	<li>
-          		 <h5>
-          		 - : 	{{comm.text}}
-          		 </h5> 
-          		 <br>
-          	<span class="largefont" style="color:blue" >
-          		User name : {{comm.username}} &nbsp; &nbsp; &nbsp; Posted date : {{comm.date}} 
-        	<button *ngIf = "commentAuth(comm.userId)" (click)="editComment(comm._id)" type="submit"  >Edit</button>
-        	<button *ngIf = "commentAuth(comm.userId)" (click)="deleteComment()" type="submit"   >delete</button>
-          	</span>	  
-        	
-        	<br>
-        <div class="col-md-6">
-        	          <div class="form-group">
+    <br>
+    <div class="commentBox">
 
+            <div class="commentBox">
+        
+        <h3 class="taskDescription" style="color: black" *ngIf="isAuth()" > Leave your comment below </h3>
+        <h3 class="taskDescription" style="color: black" *ngIf="!isAuth()" >Sign up /Sign in to leave your comment below</h3>
+    </div>
+            <ul class="divcomment">
+                
+          <div  class="divcomment" *ngFor="let comm of comments">
+         
+                <div class="commenterImage">
+                  <img src="{{comm.userImage}}" />
+                </div>
+               <h4>
+                  {{comm.username}}   
+               </h4> 
+               <h5>
+              {{comm.text}}
+              </h5>
+               &nbsp; &nbsp; &nbsp; Posted date : {{comm.date}}  GMT 
+        &nbsp;  <button *ngIf = "commentAuth(comm.userId)"  (click)="editComment(comm._id)" type="submit">Edit</button>
+          &nbsp;<button *ngIf = "commentAuth(comm.userId)" (click)="deleteComment(comm._id)" type="submit">delete</button>
+        <button  (click)="!editComment(comm._id)"  type="submit" *ngIf=toggle >Cancel</button>
+          
+          <br>
+      <hr>
 
-<br>
-
+        <div class="col-md-12">
+      <br>
           </div>
-          </div>
-          	</li>
-          </ul>
         </div>
    <br>
-        </div>
-<button  (click)="anotherSubmit();!editComment();anotherSubmit()" type="submit" *ngIf=toggle >submit</button>
+                </ul>
+
+
+<button  (click)="anotherSubmit();!editComment();anotherSubmit()" type="submit" *ngIf=toggle >Post</button>
 <textarea id="myTextarea"    [hidden]=!toggle [(ngModel)]="text">
    </textarea>
-   <input type="text" style="width: 100%;" [(ngModel)]="com" *ngIf="isAuth()"  placeholder="insert comment"/>
-<button  (click)="insertComment()" type="submit"  *ngIf="isAuth()">submit</button>
-<br>
-<br>
+   <input type="text" style="width: 100%;" [(ngModel)]="com" *ngIf="isAuth()" placeholder="insert comment" />
+<button  (click)="insertComment()" type="submit"  *ngIf="isAuth()" [hidden]=toggle>Post</button>
+
+    </div>
+    </div>
+    </div>
+                </div>
+           
+                </div>
+         

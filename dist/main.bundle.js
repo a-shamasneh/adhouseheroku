@@ -76,6 +76,7 @@ var userDataService = (function () {
     function userDataService(http) {
         this.http = http;
     }
+    // Profile services : - 
     userDataService.prototype.profile = function (id) {
         return this.http.get('/api/getUser/' + id).map(function (res) { return res.json(); });
     };
@@ -88,6 +89,10 @@ var userDataService = (function () {
     userDataService.prototype.Remove = function (id) {
         return this.http.post('/api/adds/reject', { id: id }).map(function (res) { return res.json(); });
     };
+    userDataService.prototype.getAdvInfo = function (id) {
+        return this.http.get('/api/addserv/' + id).map(function (res) { return res.json(); });
+    };
+    // Comments services :- 
     userDataService.prototype.InsertCom = function (data) {
         return this.http.post('/api/insertComment', data).map(function (res) { return res.json(); });
     };
@@ -100,8 +105,12 @@ var userDataService = (function () {
     userDataService.prototype.delComm = function (comId) {
         return this.http.delete('/api/removeCommentById/delete/' + comId).map(function (res) { return res.json(); });
     };
-    userDataService.prototype.getAdvInfo = function (id) {
-        return this.http.get('/api/addserv/' + id).map(function (res) { return res.json(); });
+    // Rating services :- 
+    userDataService.prototype.insertRate = function (data) {
+        return this.http.post('/api/insertR', data).map(function (res) { return res.json(); });
+    };
+    userDataService.prototype.getAllRatingByAdID = function (id) {
+        return this.http.get('/api/allR/' + id).map(function (res) { return res.json(); });
     };
     userDataService = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(), 
@@ -365,29 +374,30 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var AdvertismentComponent = (function () {
+    //  constructor 
     function AdvertismentComponent(user, route) {
         var _this = this;
         this.user = user;
         this.route = route;
         this.toggle = false;
+        this.userId = localStorage.getItem('id');
+        // retrive the information for the advertisment
         this.url = this.route.params.subscribe(function (params) {
             _this.id = params['id'];
+            console.log(_this.id);
         });
         this.user.getAdvInfo(this.id).subscribe(function (ok) {
             _this.advdata = ok;
         });
-        this.user.getCommById(this.id).subscribe(function (data) {
-            _this.comments = data;
-            _this.comId = data[0]._id;
-        });
     }
+    // ******** Comment functions ********* 
     AdvertismentComponent.prototype.commentAuth = function (id) {
         this.userId = localStorage.getItem('id');
         this.userId = JSON.parse(this.userId);
         return (id == this.userId);
     };
-    AdvertismentComponent.prototype.editComment = function (x) {
-        this.comId = x;
+    AdvertismentComponent.prototype.editComment = function (id) {
+        this.comId = id;
         this.toggle = !this.toggle;
     };
     AdvertismentComponent.prototype.anotherSubmit = function () {
@@ -397,11 +407,11 @@ var AdvertismentComponent = (function () {
             text: this.text
         };
         this.user.editComm(updateCom).subscribe(function (Done) {
-            _this.com = Done;
+            _this.dump = Done;
         });
-        this.user.getCommById(this.id).subscribe(function (data) {
-            _this.comments = data;
-        });
+        this.com = '';
+        this.text = '';
+        this.refreshCom();
     };
     AdvertismentComponent.prototype.insertComment = function () {
         var _this = this;
@@ -412,24 +422,26 @@ var AdvertismentComponent = (function () {
             advId: this.id,
             text: this.com
         };
-        console.log(newCom);
         this.user.InsertCom(newCom).subscribe(function (Done) {
             _this.inserted = Done;
-        });
-        this.user.getCommById(this.id).subscribe(function (data) {
-            _this.comments = data;
+            _this.com = '';
+            _this.comments.push(Done);
+            _this.refreshCom();
         });
     };
-    AdvertismentComponent.prototype.deleteComment = function () {
+    AdvertismentComponent.prototype.deleteComment = function (id) {
         var _this = this;
-        this.user.delComm(this.comId).subscribe(function (deleted) {
+        var comid = id;
+        this.user.delComm(id).subscribe(function (deleted) {
             _this.deletedDone = deleted;
             console.log(_this.deletedDone);
+            for (var i = 0; i < _this.comments.length; i++) {
+                if (_this.comments[i]._id === comid) {
+                    _this.comments.splice(i, 1);
+                }
+            }
         });
-        this.user.getCommById(this.id).subscribe(function (data) {
-            _this.comments = data;
-            console.log(data);
-        });
+        this.refreshCom();
     };
     AdvertismentComponent.prototype.isAuth = function () {
         this.toggle = !this.toggle;
@@ -437,7 +449,71 @@ var AdvertismentComponent = (function () {
         this.userId = JSON.parse(this.userId);
         return typeof (this.userId) === 'string';
     };
+    AdvertismentComponent.prototype.refreshCom = function () {
+        var _this = this;
+        this.user.getCommById(this.id).subscribe(function (data) {
+            _this.comments = data.reverse();
+            // console.log(data)
+        });
+    };
+    //  ******** rating functions ********* 
+    //  ******** rating functions ********* 
+    AdvertismentComponent.prototype.insertRateAdv = function (advId, value) {
+        var _this = this;
+        console.log(advId, value);
+        this.dump = '';
+        var rate = {
+            value: Number(value),
+            postedBy: this.userId,
+            advertismentId: advId
+        };
+        this.user.insertRate(rate).subscribe(function (Done) {
+            _this.dump = Done;
+            // console.log(Done)
+        });
+        this.retriveRating();
+    };
+    AdvertismentComponent.prototype.retriveRating = function () {
+        var _this = this;
+        console.log(this.id);
+        this.user.getAllRatingByAdID(this.id).subscribe(function (Done) {
+            _this.AvgRating = Done;
+        });
+        console.log(this.AvgRating);
+    };
+    AdvertismentComponent.prototype.refreshRating = function () {
+        var _this = this;
+        this.user.getAllRatingByAdID(this.id).subscribe(function (data) {
+            if (typeof (data) === 'string') {
+                _this.AvgRating = 0;
+            }
+            else {
+                _this.AvgRating = data;
+                console.log(data);
+            }
+        });
+    };
     AdvertismentComponent.prototype.ngOnInit = function () {
+        var _this = this;
+        // retrive all comment(s) for this advertisment order by most recent  .
+        this.user.getCommById(this.id).subscribe(function (data) {
+            _this.comments = data.reverse();
+            _this.comId = data[0]._id;
+            console.log(data);
+        });
+        this.user.getAllRatingByAdID(this.id).subscribe(function (data) {
+            if (typeof (data) === 'string') {
+                _this.AvgRating = 0;
+            }
+            else {
+                _this.AvgRating = Math.floor(data);
+                console.log(data);
+            }
+        });
+    };
+    AdvertismentComponent.prototype.ngOnChanges = function () {
+        this.refreshCom();
+        this.retriveRating();
     };
     AdvertismentComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
@@ -704,6 +780,8 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__admin_service__ = __webpack_require__(308);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__apis_apis_component__ = __webpack_require__(462);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__advertisment_advertisment_component__ = __webpack_require__(460);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__contact_contact_component__ = __webpack_require__(582);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__helpdesk_service__ = __webpack_require__(585);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -714,6 +792,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+
+
 
 
 
@@ -774,6 +854,10 @@ var ROUTES = [
     {
         path: 'advertisment/:id',
         component: __WEBPACK_IMPORTED_MODULE_23__advertisment_advertisment_component__["a" /* AdvertismentComponent */]
+    },
+    {
+        path: 'Contact',
+        component: __WEBPACK_IMPORTED_MODULE_24__contact_contact_component__["a" /* ContactComponent */]
     }
 ];
 var AppModule = (function () {
@@ -793,7 +877,8 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_19__profile_profile_component__["a" /* ProfileComponent */],
                 __WEBPACK_IMPORTED_MODULE_17__categories_pipe__["a" /* CategoriesPipe */],
                 __WEBPACK_IMPORTED_MODULE_22__apis_apis_component__["a" /* ApisComponent */],
-                __WEBPACK_IMPORTED_MODULE_23__advertisment_advertisment_component__["a" /* AdvertismentComponent */]
+                __WEBPACK_IMPORTED_MODULE_23__advertisment_advertisment_component__["a" /* AdvertismentComponent */],
+                __WEBPACK_IMPORTED_MODULE_24__contact_contact_component__["a" /* ContactComponent */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -805,7 +890,7 @@ var AppModule = (function () {
                 }),
                 __WEBPACK_IMPORTED_MODULE_4__angular_router__["a" /* RouterModule */].forRoot(ROUTES)
             ],
-            providers: [__WEBPACK_IMPORTED_MODULE_21__admin_service__["a" /* AdminService */], __WEBPACK_IMPORTED_MODULE_10__addserv_service__["a" /* AddservService */], __WEBPACK_IMPORTED_MODULE_15__getadd_service__["a" /* GetaddService */], __WEBPACK_IMPORTED_MODULE_20__userdata_service__["a" /* userDataService */], { provide: __WEBPACK_IMPORTED_MODULE_5__angular_common__["a" /* LocationStrategy */], useClass: __WEBPACK_IMPORTED_MODULE_5__angular_common__["b" /* HashLocationStrategy */] }, __WEBPACK_IMPORTED_MODULE_12__auth_service__["a" /* AuthService */]],
+            providers: [__WEBPACK_IMPORTED_MODULE_21__admin_service__["a" /* AdminService */], __WEBPACK_IMPORTED_MODULE_10__addserv_service__["a" /* AddservService */], __WEBPACK_IMPORTED_MODULE_15__getadd_service__["a" /* GetaddService */], __WEBPACK_IMPORTED_MODULE_20__userdata_service__["a" /* userDataService */], { provide: __WEBPACK_IMPORTED_MODULE_5__angular_common__["a" /* LocationStrategy */], useClass: __WEBPACK_IMPORTED_MODULE_5__angular_common__["b" /* HashLocationStrategy */] }, __WEBPACK_IMPORTED_MODULE_12__auth_service__["a" /* AuthService */], __WEBPACK_IMPORTED_MODULE_25__helpdesk_service__["a" /* HelpdeskService */]],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* AppComponent */]]
         }), 
         __metadata('design:paramtypes', [])
@@ -822,6 +907,11 @@ var AppModule = (function () {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CategoriesPipe; });
+// import { Pipe, PipeTransform } from '@angular/core';
+// @Pipe({
+//   name: 'filter'
+// })
+// export class CategoriesPipe implements PipeTransform {
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -835,11 +925,34 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var CategoriesPipe = (function () {
     function CategoriesPipe() {
     }
-    CategoriesPipe.prototype.transform = function (alladds, term) {
-        if (term === undefined)
+    CategoriesPipe.prototype.transform = function (alladds, term, condition) {
+        if (term === undefined && condition === undefined)
             return alladds;
+        if (term === undefined && condition) {
+            return alladds.filter(function (adv) {
+                return adv['ad_loc'].toLowerCase().includes(condition.toLowerCase());
+            });
+        }
+        if (condition === undefined && term) {
+            return alladds.filter(function (adv) {
+                return adv['ad_cat'].toLowerCase().includes(term.toLowerCase());
+            });
+        }
+        if (term === "All") {
+            return alladds.filter(function (adv) {
+                return adv['ad_loc'].toLowerCase().includes(condition.toLowerCase());
+            });
+        }
+        else {
+            if (condition === "All") {
+                return alladds.filter(function (adv) {
+                    return adv['ad_cat'].toLowerCase().includes(term.toLowerCase());
+                });
+            }
+        }
         return alladds.filter(function (adv) {
-            return adv.ad_cat.toLowerCase().includes(term.toLowerCase());
+            console.log(alladds, adv);
+            return adv['ad_cat'].toLowerCase().includes(term.toLowerCase()) && adv['ad_loc'].toLowerCase().includes(condition.toLowerCase());
         });
     };
     CategoriesPipe = __decorate([
@@ -912,7 +1025,8 @@ var HomeComponent = (function () {
         var _this = this;
         this.Get = Get;
         //pipes///
-        this.catgs = ["careers", "cars", "furniture", "electronic", "Other"];
+        this.catgs = ["Scholorship", "Food-Supplements", "Fashion", "Jobs", "Cars&Bikes", "Furniture", "Real-Estate-For-Sale", "Pets", "Funny-Ads", "Electronic", "Baby-Kids", "Other", "All"];
+        this.cities = ["Amman", "Irbid", "Jerash", "Ajloun", "Madaba", "Tafela", "Karak", "Zarqa", "Maan", "Aqaba", "Mafraq", "All"];
         this.Get.getalladv().subscribe(function (ok) {
             _this.alladds = ok;
             console.log(_this.alladds);
@@ -975,7 +1089,7 @@ var LoginComponent = (function () {
                 localStorage.setItem('id', JSON.stringify(ok.id));
                 localStorage.setItem('UserType', JSON.stringify(ok.Admin));
                 //console.log(localStorage.getItem('UserType'));
-                // window.location.href=("/#Adds")
+                window.location.href = ("/#profile");
                 _this.message = ok.id;
             }
             else {
@@ -1016,7 +1130,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 var NavComponent = (function () {
     function NavComponent() {
+        this.isIn = false; // store state
     }
+    NavComponent.prototype.toggleState = function () {
+        var bool = this.isIn;
+        this.isIn = bool === false ? true : false;
+    };
     NavComponent.prototype.ngOnInit = function () {
     };
     NavComponent.prototype.auth = function () {
@@ -1290,10 +1409,10 @@ module.exports = module.exports.toString();
 
 exports = module.exports = __webpack_require__(12)();
 // imports
-exports.push([module.i, "@import url(//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css);", ""]);
+
 
 // module
-exports.push([module.i, ".img{\r\n\ttext-align:center;\r\n\tposition: center;\r\n    display: inline-block;\r\n\r\n}\r\n.fieldwrapper{\r\nwhite-space: nowrap;\r\n}\r\n.largefont { \r\n  color: #0066FF; \r\n  font-family:arial; \r\n  font-size: 14px; \r\n}\r\n\r\n.detailBox {\r\n    width:1100px;\r\n    border:2px solid #bbb;\r\n    margin:60px;\r\n}\r\n.titleBox {\r\n    background-color:#fdfdfd;\r\n    padding:10px;\r\n}\r\n.titleBox label{\r\n  color:#444;\r\n  margin:0;\r\n  display:inline-block;\r\n}\r\n\r\n.commentBox {\r\n    padding:10px;\r\n    border-top:1px dotted #bbb;\r\n}\r\n.commentBox .form-group:first-child, .actionBox .form-group:first-child {\r\n    width:80%;\r\n}\r\n.commentBox .form-group:nth-child(2), .actionBox .form-group:nth-child(2) {\r\n    width:18%;\r\n}\r\n.actionBox .form-group * {\r\n    width:1000%;\r\n}\r\n.taskDescription {\r\n    margin-top:10px 0;\r\n}\r\n.commentList {\r\n    padding:0;\r\n    list-style:none;\r\n    max-height:200px;\r\n    overflow:auto;\r\n}\r\n.commentList li {\r\n    margin:0;\r\n    margin-top:10px;\r\n}\r\n.commentList li > div {\r\n    display:table-cell;\r\n}\r\n.commenterImage {\r\n    width:30px;\r\n    margin-right:5px;\r\n    height:100%;\r\n    float:left;\r\n}\r\n.commenterImage img {\r\n    width:100%;\r\n    border-radius:50%;\r\n}\r\n.commentText p {\r\n    width:100px;\r\n    margin:0;\r\n}\r\n.sub-text {\r\n    color:#aaa;\r\n    font-family:verdana;\r\n    font-size:11px;\r\n}\r\n.actionBox {\r\n    border-top:1px dotted #bbb;\r\n    padding:10px;\r\n}", ""]);
+exports.push([module.i, ".img{\r\n  text-align:right;\r\n  position: center;\r\n    display: inline-block;\r\n    border:10;\r\n\r\n    border-width: 1px;\r\n    border-color: black;\r\n\r\n}\r\n.fieldwrapper{\r\nwhite-space: nowrap;\r\n}\r\n.largefont { \r\n  color: #0066FF; \r\n  font-family:arial; \r\n  font-size: 14px; \r\n}\r\n\r\n.detailBox {\r\n\r\n    width:700px;\r\n    border:2px solid #bbb;\r\n    margin:60px;\r\n}\r\n.titleBox {\r\n    background-color: #ccccff\r\n;\r\n    padding:10px;\r\n}\r\n.titleBox label{\r\n\r\n  color:#444;\r\n  margin:0;\r\n  display:inline-block;\r\n}\r\n\r\n.commentBox {\r\n\r\n    padding:10px;\r\n    border-top:1px dotted #bbb;\r\n}\r\n.commentBox .form-group:first-child, .actionBox .form-group:first-child {\r\n    width:80%;\r\n}\r\n.commentBox .form-group:nth-child(2), .actionBox .form-group:nth-child(2) {\r\n    width:18%;\r\n}\r\n.actionBox .form-group * {\r\n    width:1000%;\r\n}\r\n.taskDescription {\r\n    margin-top:10px 0;\r\n}\r\n.commentList {\r\n    padding:0;\r\n    list-style:none;\r\n    max-height:200px;\r\n    overflow:auto;\r\n}\r\n.commentList li {\r\n    margin:0;\r\n    margin-top:10px;\r\n}\r\n.commentList li > div {\r\n    display:table-cell;\r\n}\r\n.commenterImage {\r\n    width:30px;\r\n    margin-right:5px;\r\n    height:100%;\r\n    float:left;\r\n}\r\n.commenterImage img {\r\n    width:100%;\r\n    border-radius:50%;\r\n}\r\n.commentText p {\r\n    width:100px;\r\n    margin:0;\r\n}\r\n.sub-text {\r\n    color:#aaa;\r\n    font-family:verdana;\r\n    font-size:11px;\r\n}\r\n.actionBox {\r\n    border-top:1px dotted #bbb;\r\n    padding:10px;\r\n}\r\n\r\n.jumbotron p:last-child {\r\n  margin-bottom: 0;\r\n}\r\n\r\n.jumbotron-heading {\r\n  font-weight: 300;\r\n  text-align:center;\r\n}\r\n\r\n.jumbotron .container {\r\n  max-width: 40rem;\r\n}\r\n\r\np {\r\n    color: navy blue;font-size: 14px;\r\n    font-weight: 9px ;\r\n}\r\nh4{\r\n    color:  #0000e6\r\n;font-size: 12px;\r\n}\r\n\r\nh5{\r\n\r\n    color: # 0000FF;\r\n     font-size: 25px; \r\n  margin-left: 25px;\r\n\r\n}\r\n.center{\r\n    text-align: center;\r\n}\r\n.desc{\r\n    font-size: larger;\r\n    color: cadetblue;\r\n}\r\n.imgadv{\r\nheight: 100%;\r\n   \r\n    width: 100%;\r\n}", ""]);
 
 // exports
 
@@ -1383,7 +1502,7 @@ exports = module.exports = __webpack_require__(12)();
 
 
 // module
-exports.push([module.i, "img{\r\n\twidth: 356px;\r\n\theight: 280px;\r\n}\r\n/*\r\ndiv p{\r\n\tfont-weight: bold;\r\n}\r\n\r\n.header {\r\n\ttext-align: center;\r\n}\r\n\r\n.header1 {\r\n\tfont-size: 32px;\r\n\tfont-weight: bold;\r\n}\r\n\r\n.header2 {\r\n\tfont-size: 18px;\r\n}\r\n\r\n\r\n\r\n.thumbnail img {\r\n  \r\npadding-right:15px;\r\n}\r\n\r\n.textRight {\r\n  \r\ntext-align : right;\r\n}*/\r\n\r\n\r\n/* Added some padding to make it more readable */\r\n\r\n/*div[class^=\"col-\"] {\r\n    padding - left:240px;\r\n}*/\r\n\r\n\r\nbody {\r\n  min-height: 75rem; /* Can be removed; just added for demo purposes */\r\n}\r\n\r\n\r\n\r\n.jumbotron {\r\n  padding-top: 6rem;\r\n  padding-bottom: 6rem;\r\n  margin-bottom: 0;\r\n  background-color: #fff;\r\n}\r\n\r\n.jumbotron p:last-child {\r\n  margin-bottom: 0;\r\n}\r\n\r\n.jumbotron-heading {\r\n  font-weight: 300;\r\n  text-align:center;\r\n}\r\n\r\n.jumbotron .container {\r\n  max-width: 40rem;\r\n}\r\n\r\n.lead {\r\n  text-align:center;\r\n}\r\n\r\n.button {\r\n   text-align:center;\r\n}\r\n\r\n.album {\r\n  min-height: 50rem; /* Can be removed; just added for demo purposes */\r\n  padding-top: 3rem;\r\n  padding-bottom: 3rem;\r\n  background-color: #f7f7f7;\r\n}\r\n\r\n.card {\r\n  float: left;\r\n  width: 33.333%;\r\n  padding: .75rem;\r\n  margin-bottom: 2rem;\r\n  border: 0;\r\n}\r\n\r\n.card > img {\r\n  margin-bottom: .75rem;\r\n}\r\n\r\n.card-text {\r\n  font-size: 85%;\r\n}\r\n\r\n.media-heading {\r\n  font-size : ;\r\n}\r\n\r\n", ""]);
+exports.push([module.i, "img{\r\n  width: 356px;\r\n  height: 280px;\r\n}\r\n\r\nbody {\r\n  min-height: 75rem; /* Can be removed; just added for demo purposes */\r\n}\r\n\r\n\r\n\r\n.jumbotron {\r\n  padding-top: 6rem;\r\n  padding-bottom: 6rem;\r\n  margin-bottom: 0;\r\n  background-color: #fff;\r\n}\r\n\r\n.jumbotron p:last-child {\r\n  margin-bottom: 0;\r\n}\r\n\r\n.jumbotron-heading {\r\n  font-weight: 300;\r\n  text-align:center;\r\n}\r\n\r\n.jumbotron .container {\r\n  max-width: 40rem;\r\n}\r\n\r\n.lead {\r\n  text-align:center;\r\n}\r\n\r\n.button {\r\n   text-align:center;\r\n   display: inline-block;\r\n}\r\n\r\n.album {\r\n  min-height: 50rem; /* Can be removed; just added for demo purposes */\r\n  padding-top: 3rem;\r\n  padding-bottom: 3rem;\r\n  background-color: #f7f7f7;\r\n}\r\n\r\n.card {\r\n  float: left;\r\n  width: 33.333%;\r\n  padding: .75rem;\r\n  margin-bottom: 2rem;\r\n  border: 0;\r\n}\r\n\r\n.card > img {\r\n  margin-bottom: .75rem;\r\n}\r\n\r\n.card-text {\r\n  font-size: 85%;\r\n}\r\n\r\n.media-heading {\r\n  font-size : ;\r\n}", ""]);
 
 // exports
 
@@ -1419,7 +1538,7 @@ exports = module.exports = __webpack_require__(12)();
 
 
 // module
-exports.push([module.i, ".active {\r\n  color: #fff;\r\n}\r\n.navbar-toggler {\r\n  border: solid 1px silver;\r\n  border-radius: 2px;\r\n  color: #eee;\r\n}", ""]);
+exports.push([module.i, "#logo{\r\n\twidth:37px\r\n}\r\n\r\n.navbar{\r\n\tbackground-color: whitesmoke;\r\n}\r\na{\r\n\tcolor: blueviolet;\r\n    font-size: 1.2em;\r\n    font-family: cursive;\r\n}\r\nli a:hover {\r\n   color:#4dffff;\r\n\r\n}\r\nli a:active {\r\n    color: red;\r\n}", ""]);
 
 // exports
 
@@ -1475,7 +1594,7 @@ module.exports = "<br><br>\r\n  <div class=\"container\">\r\n  <table class=\"ta
 /***/ 546:
 /***/ (function(module, exports) {
 
-module.exports = "        <div class=\"row\">\r\n          <div  class=\"col-md-4\" *ngFor=\"let ad of advdata\"  >\r\n            <img class = \"img\" data-src=\"{{ad.ad_img}}\" >\r\n            <p class=\"card-text\">\r\n                <span class=\"media-heading\">{{ad.ad_date}}</span>\r\n                <br>\r\n                <span>Category : {{ad.ad_cat}}</span>\r\n                <br>\r\n                <span>Location: {{ad.ad_loc}}</span>\r\n                <br>\r\n                <span>Description: {{ad.ad_desc}}</span>\r\n                <br>\r\n                <span> Contact : {{ad.ad_phone}}</span>\r\n                <br>\r\n            </p>\r\n          </div>\r\n        </div>\r\n                <br>\r\n                <br>\r\n                <br>\r\n                <br>\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-9\" *ngFor=\"let comm of comments\">\r\n          <ul>\r\n          \t<li>\r\n          \t\t <h5>\r\n          \t\t - : \t{{comm.text}}\r\n          \t\t </h5> \r\n          \t\t <br>\r\n          \t<span class=\"largefont\" style=\"color:blue\" >\r\n          \t\tUser name : {{comm.username}} &nbsp; &nbsp; &nbsp; Posted date : {{comm.date}} \r\n        \t<button *ngIf = \"commentAuth(comm.userId)\" (click)=\"editComment(comm._id)\" type=\"submit\"  >Edit</button>\r\n        \t<button *ngIf = \"commentAuth(comm.userId)\" (click)=\"deleteComment()\" type=\"submit\"   >delete</button>\r\n          \t</span>\t  \r\n        \t\r\n        \t<br>\r\n        <div class=\"col-md-6\">\r\n        \t          <div class=\"form-group\">\r\n\r\n\r\n<br>\r\n\r\n          </div>\r\n          </div>\r\n          \t</li>\r\n          </ul>\r\n        </div>\r\n   <br>\r\n        </div>\r\n<button  (click)=\"anotherSubmit();!editComment();anotherSubmit()\" type=\"submit\" *ngIf=toggle >submit</button>\r\n<textarea id=\"myTextarea\"    [hidden]=!toggle [(ngModel)]=\"text\">\r\n   </textarea>\r\n   <input type=\"text\" style=\"width: 100%;\" [(ngModel)]=\"com\" *ngIf=\"isAuth()\"  placeholder=\"insert comment\"/>\r\n<button  (click)=\"insertComment()\" type=\"submit\"  *ngIf=\"isAuth()\">submit</button>\r\n<br>\r\n<br>"
+module.exports = " <br>\r\n    <br>\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n        <div class=\"row\">\r\n        <div class=\"col-md-3\"></div>\r\n          <div  class=\"col-md-6 center\" *ngFor=\"let ad of  advdata\"  >\r\n            <img class = \"img imgadv\" data-src=\"{{ad.ad_img}}\" >\r\n             <span>\r\n                 Average Rating : {{AvgRating}}\r\n              </span>\r\n              <br>\r\n  <input id=\"rating-5\" type=\"radio\" [(ngModel)] = \"val\" value=\"5\" (click) = \"insertRateAdv(ad._id,5)\"> 5 &nbsp;\r\n  <input id=\"rating-4\" type=\"radio\" [(ngModel)] = \"val\" value=\"4\" (click) = \"insertRateAdv(ad._id,4)\"> 4 &nbsp;\r\n  <input id=\"rating-3\" type=\"radio\" [(ngModel)] = \"val\" value=\"3\" (click) = \"insertRateAdv(ad._id,3)\"> 3 &nbsp;\r\n  <input id=\"rating-2\" type=\"radio\" [(ngModel)] = \"val\" value=\"2\" (click) = \"insertRateAdv(ad._id,2)\"> 2 &nbsp;\r\n  <input id=\"rating-1\" type=\"radio\" [(ngModel)] = \"val\" value=\"1\" (click) = \"insertRateAdv(ad._id,1)\"> 1 &nbsp;\r\n              <br>\r\n\r\n                <p>Posted date: {{ad.ad_date}}</p>\r\n                <p class=\"desc\">Category : {{ad.ad_cat}}</p>\r\n                <p class=\"desc\">Location: {{ad.ad_loc}}</p>\r\n                <p class=\"desc\">\r\n                  \r\n                \r\n                  \r\n                  Description: {{ad.ad_desc}}</p>\r\n                \r\n                  \r\n                <p class=\"desc\"> Contact : {{ad.ad_phone}}</p>\r\n          </div>\r\n         <div class=\"col-md-3\"></div>\r\n        </div>\r\n                \r\n                </div>\r\n                </div>\r\n                <div class=\"row\">\r\n                <div class=\"col-md-3\"></div>\r\n                <div class=\"col-md-6\">\r\n                       <div class=\"col-md-3\"></div>\r\n                     <div class=\"detailBox\">\r\n    <div class=\"titleBox\">\r\n      <label>Comment Box</label>\r\n        <button type=\"button\" class=\"close\" aria-hidden=\"true\">&times;</button>\r\n\r\n    <br>\r\n    <div class=\"commentBox\">\r\n\r\n            <div class=\"commentBox\">\r\n        \r\n        <h3 class=\"taskDescription\" style=\"color: black\" *ngIf=\"isAuth()\" > Leave your comment below </h3>\r\n        <h3 class=\"taskDescription\" style=\"color: black\" *ngIf=\"!isAuth()\" >Sign up /Sign in to leave your comment below</h3>\r\n    </div>\r\n            <ul class=\"divcomment\">\r\n                \r\n          <div  class=\"divcomment\" *ngFor=\"let comm of comments\">\r\n         \r\n                <div class=\"commenterImage\">\r\n                  <img src=\"{{comm.userImage}}\" />\r\n                </div>\r\n               <h4>\r\n                  {{comm.username}}   \r\n               </h4> \r\n               <h5>\r\n              {{comm.text}}\r\n              </h5>\r\n               &nbsp; &nbsp; &nbsp; Posted date : {{comm.date}}  GMT \r\n        &nbsp;  <button *ngIf = \"commentAuth(comm.userId)\"  (click)=\"editComment(comm._id)\" type=\"submit\">Edit</button>\r\n          &nbsp;<button *ngIf = \"commentAuth(comm.userId)\" (click)=\"deleteComment(comm._id)\" type=\"submit\">delete</button>\r\n        <button  (click)=\"!editComment(comm._id)\"  type=\"submit\" *ngIf=toggle >Cancel</button>\r\n          \r\n          <br>\r\n      <hr>\r\n\r\n        <div class=\"col-md-12\">\r\n      <br>\r\n          </div>\r\n        </div>\r\n   <br>\r\n                </ul>\r\n\r\n\r\n<button  (click)=\"anotherSubmit();!editComment();anotherSubmit()\" type=\"submit\" *ngIf=toggle >Post</button>\r\n<textarea id=\"myTextarea\"    [hidden]=!toggle [(ngModel)]=\"text\">\r\n   </textarea>\r\n   <input type=\"text\" style=\"width: 100%;\" [(ngModel)]=\"com\" *ngIf=\"isAuth()\" placeholder=\"insert comment\" />\r\n<button  (click)=\"insertComment()\" type=\"submit\"  *ngIf=\"isAuth()\" [hidden]=toggle>Post</button>\r\n\r\n    </div>\r\n    </div>\r\n    </div>\r\n                </div>\r\n           \r\n                </div>\r\n         "
 
 /***/ }),
 
@@ -1510,7 +1629,7 @@ module.exports = "\r\n\t\r\n\t<footer class=\"footer\">\r\n  <div class=\"contai
 /***/ 551:
 /***/ (function(module, exports) {
 
-module.exports = " <section class=\"jumbotron text-center\">\r\n      <div class=\"container\">\r\n        <h1 class=\"jumbotron-heading\">AdHouse </h1>\r\n        <p class=\"lead text-muted\">One place, all your needs</p>\r\n         \r\n        <p class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose category</a>\r\n          <select  [(ngModel)]=\"term\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let cat of catgs \">{{cat}}</option>\r\n        </select>\r\n          \r\n        </p>\r\n      </div>\r\n    </section>\r\n\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-4\" *ngFor=\"let ad of alladds | filter: term\"  >\r\n            <img data-src=\"{{ad.ad_img}}\" alt=\"Card image cap\">\r\n\r\n            <div class=\"card-text\">\r\n                <div class=\"media-heading\">{{ad.ad_date}}</div>\r\n                <div>Category : {{ad.ad_cat}}</div>\r\n                <div>Location: {{ad.ad_loc}}</div>\r\n                <div>Description: {{ad.ad_desc}}</div>\r\n                <div> Contact : {{ad.ad_phone}}</div>\r\n                <li>\r\n      <a  class=\"navbar-brand\" href=\"#\" (click) = \"advertId(ad._id)\"       \r\n      [routerLink]=\"['/advertisment/'+ad._id]\"  >Comments</a>\r\n                </li>\r\n                <br>\r\n            </div>\r\n\r\n          </div>\r\n        </div>\r\n    </div>\r\n    </div>\r\n\r\n\r\n\r\n\r\n\r\n"
+module.exports = " <!-- <section class=\"jumbotron text-center\">\r\n      <div class=\"container\">\r\n        <h1 class=\"jumbotron-heading\">AdHouse </h1>\r\n        <p class=\"lead text-muted\">One place, all your needs</p>\r\n         \r\n        <p class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose category</a>\r\n          <select  [(ngModel)]=\"term\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let cat of catgs \">{{cat}}</option>\r\n        </select>\r\n          \r\n        </p>\r\n      </div>\r\n    </section>\r\n\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-4 center\" *ngFor=\"let ad of alladds | filter: term\"  >\r\n            <img data-src=\"{{ad.ad_img}}\" alt=\"Card image cap\">\r\n\r\n            <div class=\"card-text\">\r\n                <div class=\"media-heading\">{{ad.ad_date}}</div>\r\n                <div>Category : {{ad.ad_cat}}</div>\r\n                <div>Location: {{ad.ad_loc}}</div>\r\n                <div>Description: {{ad.ad_desc}}</div>\r\n                <div> Contact : {{ad.ad_phone}}</div>\r\n                <div class=\"center\">\r\n      <a  class=\"navbar-brand\" href=\"#\" (click) = \"advertId(ad._id)\"       \r\n      [routerLink]=\"['/advertisment/'+ad._id]\"  >Comments</a>\r\n                </div>\r\n                \r\n            </div>\r\n\r\n          </div>\r\n        </div>\r\n    </div>\r\n    </div>\r\n\r\n\r\n\r\n -->\r\n\r\n<section class=\"jumbotron text-center\">\r\n      <div class=\"container\">\r\n        <h1 class=\"jumbotron-heading\">AdHouse </h1>\r\n        <p class=\"lead text-muted\">One place, all your needs</p>\r\n         \r\n        <div col-md-3 class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose category</a>\r\n         </div>\r\n          <div col-md-3 class = \"button\">\r\n          <select col-md-2  [(ngModel)]=\"term\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let cat of catgs \">{{cat}}</option>\r\n        </select>\r\n        </div>\r\n          <div col-md-3 class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose city</a>\r\n          </div>\r\n          <div col-md-3 class = \"button\">\r\n          <select  [(ngModel)]=\"condition\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let city of cities \">{{city}}</option>\r\n        </select>\r\n          \r\n        </div>\r\n\r\n      </div>      \r\n    </section>\r\n\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-4\" *ngFor=\"let ad of alladds | filter: term: condition \"  >\r\n            <img data-src=\"{{ad.ad_img}}\" alt=\"Card image cap\">\r\n\r\n            <div class=\"card-text\">\r\n                <div class=\"media-heading\">{{ad.ad_date}}</div>\r\n                <div>Category : {{ad.ad_cat}}</div>\r\n                <div>Location: {{ad.ad_loc}}</div>\r\n                <div>Description: {{ad.ad_desc}}</div>\r\n                <div> Contact : {{ad.ad_phone}}</div>\r\n                <li>\r\n      <a  class=\"navbar-brand\" href=\"#\" (click) = \"advertId(ad._id)\"       \r\n      [routerLink]=\"['/advertisment/'+ad._id]\"  >Comments</a>\r\n                </li>\r\n                <br>\r\n            </div>\r\n\r\n          </div>\r\n        </div>\r\n    </div>\r\n    </div>"
 
 /***/ }),
 
@@ -1524,7 +1643,7 @@ module.exports = "\r\n<div class=\"container\">\r\n<br><br>\r\n<form role=\"form
 /***/ 553:
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\r\n  <nav class=\"navbar navbar-fixed-top navbar-dark bg-inverse\">\r\n  <a class=\"navbar-brand\" [routerLink]=\"['']\">Home</a>\r\n  <ul class=\"nav navbar-nav\">\r\n    <li class=\"nav-item\">\r\n      <a  class=\"navbar-brand\"  *ngIf=\"auth()\" [routerLink]=\"['Adds']\">Add New </a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n      <a  class=\"navbar-brand\" href=\"#\" *ngIf=\"auth()\"       \r\n      [routerLink]=\"['profile']\" >Profile</a>\r\n    </li>\r\n    \r\n  </ul>\r\n  \r\n  <ul class=\"nav navbar-nav pull-right\">\r\n  <li class=\"nav-item\">\r\n      <a  class=\"nav-link\"  *ngIf=\"authAdmin()\"       \r\n      [routerLink]=\"['Admin']\" >Admin</a>\r\n    </li>\r\n  <li class=\"nav-item\">\r\n      <a class=\"nav-link\" *ngIf=\"auth()\" (click)=\"logout()\" href=\"#\">Log out</a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n      <a class=\"nav-link\" *ngIf=\"!auth()\" [routerLink]=\"['login']\">Sign in </a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n      <a  class=\"nav-link\"   *ngIf=\"!auth()\" [routerLink]=\"['signup']\">Sign up </a>\r\n    </li>\r\n        <li class=\"nav-item\">\r\n      <a class=\"nav-link\" [routerLink]=\"['Apis']\">Api Developers</a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n      <a class=\"nav-link\" href=\"https://twitter.com/@beeman_nl\"><i class=\"fa fa-twitter\" aria-hidden=\"true\"></i></a>\r\n    </li>\r\n    <li class=\"nav-item\">\r\n      <a class=\"nav-link\" href=\"https://github.com/beeman\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i></a>\r\n    </li>\r\n  </ul>\r\n</nav>\r\n  \r\n</div>\r\n\r\n\r\n\r\n\r\n"
+module.exports = "<div class=\"container\">\r\n  <nav class=\"navbar navbar-inverse navbar-fixed-top\">\r\n    <div class=\"container-fluid\">\r\n        <div class=\"navbar-header\">\r\n            <button type=\"button\" class=\"navbar-toggle collapsed\" \r\n            (click)=\"toggleState()\">\r\n                <span class=\"sr-only\">Toggle navigation</span>\r\n                <span class=\"icon-bar\"></span>\r\n                <span class=\"icon-bar\"></span>\r\n                <span class=\"icon-bar\"></span>\r\n            </button> <!-- #1 -->\r\n            <a class=\"navbar-brand\"><img src=\"../assets/logo.png\" id=\"logo\"></a>\r\n        </div>\r\n         <div class=\"collapse navbar-collapse\" \r\n         [ngClass]=\"{ 'in': isIn }\"> \r\n            <ul class=\"nav navbar-nav\">\r\n                <li>\r\n                <a [routerLink]=\"['']\">Home</a>\r\n                </li>\r\n                <li>\r\n                  <a *ngIf=\"auth()\" [routerLink]=\"['Adds']\">Add New \r\n                  </a>\r\n                </li>\r\n                <li>\r\n                  <a *ngIf=\"auth()\"       \r\n      [routerLink]=\"['profile']\" >Profile</a>\r\n                </li>\r\n                <li><a *ngIf=\"authAdmin()\"       \r\n              [routerLink]=\"['Admin']\" >Admin</a></li>\r\n                \r\n            </ul>\r\n            <ul class=\"nav navbar-nav pull-right\">\r\n              \r\n                <li>\r\n                <a *ngIf=\"auth()\" (click)=\"logout()\">Log out</a>\r\n                </li>\r\n                <li><a *ngIf=\"!auth()\" [routerLink]=\"['login']\">Sign in </a></li>\r\n                <li>\r\n                 <a *ngIf=\"!auth()\" [routerLink]=\"['signup']\">Sign up </a>\r\n                 </li>\r\n                 <li>\r\n              <a [routerLink]=\"['Apis']\">Api Developers</a>\r\n            </li>\r\n            <li><a [routerLink]=\"['Contact']\">Contact Us</a></li>\r\n                \r\n          <li>\r\n            <a href=\"https://github.com/AdHouse\" target=\"_blank\"><i class=\"fa fa-github\" aria-hidden=\"true\"></i></a>\r\n          </li>\r\n            </ul>\r\n        </div> <!-- #2 -->\r\n    </div>\r\n</nav>\r\n</div>\r\n\r\n\r\n\r\n\r\n"
 
 /***/ }),
 
@@ -1547,6 +1666,120 @@ module.exports = "<!-- <div class=\"col-md-6 col-md-offset-3\">\r\n<form (submit
 
 module.exports = __webpack_require__(340);
 
+
+/***/ }),
+
+/***/ 582:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__helpdesk_service__ = __webpack_require__(585);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ContactComponent; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var ContactComponent = (function () {
+    function ContactComponent(contact) {
+        this.contact = contact;
+    }
+    ContactComponent.prototype.sendMsg = function () {
+        var newMsg = {
+            name: this.name,
+            email: this.email,
+            message: this.message
+        };
+        this.contact.sendemail(newMsg).subscribe(function (ok) {
+            console.log(ok);
+        });
+    };
+    ContactComponent.prototype.ngOnInit = function () {
+    };
+    ContactComponent = __decorate([
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
+            selector: 'app-contact',
+            template: __webpack_require__(584),
+            styles: [__webpack_require__(583)]
+        }), 
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__helpdesk_service__["a" /* HelpdeskService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__helpdesk_service__["a" /* HelpdeskService */]) === 'function' && _a) || Object])
+    ], ContactComponent);
+    return ContactComponent;
+    var _a;
+}());
+//# sourceMappingURL=contact.component.js.map
+
+/***/ }),
+
+/***/ 583:
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(12)();
+// imports
+
+
+// module
+exports.push([module.i, "body{\r\n    width:100%;\r\n    height:100%;\r\n    font-family: 'Roboto Condensed', sans-serif;\r\n    \r\n}\r\nh1,h2,h3 {\r\n    margin:0 0 35px 0;\r\n    font-family: 'Patua One';\r\n    text-transform: uppercase;\r\n    letter-spacing:1px;\r\n}\r\np{\r\n    margin:0 0 25px;\r\n    font-size:18px;\r\n    line-height:1.6em;\r\n}\r\na{\r\n    color:#26a5d3;\r\n}\r\na:hover,a:focus{\r\n    text-decoration:none;\r\n    color:#26a5d3;\r\n}\r\n#contact{\r\n    background:#333333;\r\n    color:#f4f4f4;\r\n    padding-bottom:80px;\r\n}\r\ntextarea.form-control{\r\n    height:100px;\r\n}", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ 584:
+/***/ (function(module, exports) {
+
+module.exports = "<section id=\"contact\" class=\"content-section text-center\">\n        <div class=\"contact-section\">\n            <div class=\"container\">\n            <br>\n              <h2>Contact Us</h2>\n              <p>Send us your feedback, comments or concerns by filling out the contact form and one of our representitives will be in touch as soon as possible</p>\n              <div class=\"row\">\n                <div class=\"col-md-8 col-md-offset-2\">\n                  <form class=\"form-horizontal\" #myNgForm=\"ngForm\"  \n                  (submit)=\"sendMsg();myNgForm.resetForm();\">\n                    <div class=\"form-group\">\n                      <label for=\"exampleInputName2\">Name</label>\n                      <input type=\"text\" class=\"form-control\" id=\"exampleInputName2\" placeholder=\"your Name\" [(ngModel)]=\"name\" name=\"name\" required>\n                    </div>\n                    <div class=\"form-group\">\n                      <label for=\"exampleInputEmail2\">Email</label>\n                      <input type=\"email\" class=\"form-control\" id=\"exampleInputEmail2\" placeholder=\"Your Email\"  [(ngModel)]=\"email\" name=\"email\" required>\n                    </div>\n                    <div class=\"form-group \">\n                      <label for=\"exampleInputText\">Your Message</label>\n                     <textarea  class=\"form-control\" placeholder=\"Description\" [(ngModel)]=\"message\" name=\"message\" required></textarea> \n                    </div>\n                    <button type=\"submit\" class=\"btn btn-default\">Send Message</button>\n                  </form>\n                  <hr>\n                    \n                </div>\n              </div>\n            </div>\n        </div>\n      </section>"
+
+/***/ }),
+
+/***/ 585:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(61);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_map__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_map__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HelpdeskService; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+var HelpdeskService = (function () {
+    function HelpdeskService(http) {
+        this.http = http;
+    }
+    HelpdeskService.prototype.sendemail = function (data) {
+        console.log(data);
+        return this.http.post('/api/helpdesk/support', data).map(function (res) { return res.json(); });
+    };
+    HelpdeskService = __decorate([
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Injectable"])(), 
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_http__["b" /* Http */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__angular_http__["b" /* Http */]) === 'function' && _a) || Object])
+    ], HelpdeskService);
+    return HelpdeskService;
+    var _a;
+}());
+//# sourceMappingURL=helpdesk.service.js.map
 
 /***/ })
 

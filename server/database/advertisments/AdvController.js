@@ -3,7 +3,7 @@ var UserC=require('../User/UserController.js')
 
 module.exports = {
   Addserv:function(req,res){
-    console.log(req.body)
+    //console.log(req.body)
   	var category=req.body.ad_cat;
   	var location=req.body.ad_loc;
     var desc=req.body.ad_desc;
@@ -51,6 +51,7 @@ module.exports = {
         }
         // console.log(data)
         res.json(data)
+        //console.log(data)
        })
   },
  
@@ -71,7 +72,7 @@ module.exports = {
   },
   /// reject///
     Reject:function(req,res){
-      console.log(req.body.id)
+      //console.log(req.body.id)
        // res.json("Reject")
        Adv.findOne({_id:req.body.id},function(err,ok){
         if(err){throw err}else{
@@ -96,7 +97,7 @@ module.exports = {
   ///////
   ///approve//
   Approve:function(req,res){
-      console.log(req.body.id)
+      //console.log(req.body.id)
       Adv.findOne({_id:req.body.id},function(err,ok){
         if(err){throw err}
           else{
@@ -122,7 +123,7 @@ module.exports = {
      res.json('no data for this adv ')
 
    }else{
-     console.log('Wow , advertisment information retrived ')
+     //console.log('Wow , advertisment information retrived ')
      res.json (data)
    }
  })  

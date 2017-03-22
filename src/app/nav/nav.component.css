@@ -1,8 +1,19 @@
-.active {
-  color: #fff;
+#logo{
+	width:37px
 }
-.navbar-toggler {
-  border: solid 1px silver;
-  border-radius: 2px;
-  color: #eee;
+
+.navbar{
+	background-color: whitesmoke;
+}
+a{
+	color: blueviolet;
+    font-size: 1.2em;
+    font-family: cursive;
+}
+li a:hover {
+   color:#4dffff;
+
+}
+li a:active {
+    color: red;
 }

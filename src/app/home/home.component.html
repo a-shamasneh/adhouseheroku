@@ -1,4 +1,4 @@
- <section class="jumbotron text-center">
+ <!-- <section class="jumbotron text-center">
       <div class="container">
         <h1 class="jumbotron-heading">AdHouse </h1>
         <p class="lead text-muted">One place, all your needs</p>
@@ -18,7 +18,64 @@
       <div class="container">
 
         <div class="row">
-          <div  class="col-md-4" *ngFor="let ad of alladds | filter: term"  >
+          <div  class="col-md-4 center" *ngFor="let ad of alladds | filter: term"  >
+            <img data-src="{{ad.ad_img}}" alt="Card image cap">
+
+            <div class="card-text">
+                <div class="media-heading">{{ad.ad_date}}</div>
+                <div>Category : {{ad.ad_cat}}</div>
+                <div>Location: {{ad.ad_loc}}</div>
+                <div>Description: {{ad.ad_desc}}</div>
+                <div> Contact : {{ad.ad_phone}}</div>
+                <div class="center">
+      <a  class="navbar-brand" href="#" (click) = "advertId(ad._id)"       
+      [routerLink]="['/advertisment/'+ad._id]"  >Comments</a>
+                </div>
+                
+            </div>
+
+          </div>
+        </div>
+    </div>
+    </div>
+
+
+
+ -->
+
+<section class="jumbotron text-center">
+      <div class="container">
+        <h1 class="jumbotron-heading">AdHouse </h1>
+        <p class="lead text-muted">One place, all your needs</p>
+         
+        <div col-md-3 class = "button">
+          <a href="#" class="btn btn-primary">Choose category</a>
+         </div>
+          <div col-md-3 class = "button">
+          <select col-md-2  [(ngModel)]="term" class="btn btn-secondary" >
+
+         <option  *ngFor="let cat of catgs ">{{cat}}</option>
+        </select>
+        </div>
+          <div col-md-3 class = "button">
+          <a href="#" class="btn btn-primary">Choose city</a>
+          </div>
+          <div col-md-3 class = "button">
+          <select  [(ngModel)]="condition" class="btn btn-secondary" >
+
+         <option  *ngFor="let city of cities ">{{city}}</option>
+        </select>
+          
+        </div>
+
+      </div>      
+    </section>
+
+    <div class="album text-muted">
+      <div class="container">
+
+        <div class="row">
+          <div  class="col-md-4" *ngFor="let ad of alladds | filter: term: condition "  >
             <img data-src="{{ad.ad_img}}" alt="Card image cap">
 
             <div class="card-text">
@@ -38,8 +95,3 @@
         </div>
     </div>
     </div>
-
-
-
-
-

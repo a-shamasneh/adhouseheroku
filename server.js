@@ -7,7 +7,7 @@ require('./server/config/routes.js') (app,express);
 //=============================================================================
 /*									Database								 */
 //=============================================================================
-	var mongoURI ='mongodb://mais:1234@ds019866.mlab.com:19866/adhouse';
+	var mongoURI ="mongodb://localhost/house";
 	mongoose.connect(mongoURI);
 	db = mongoose.connection;
 
@@ -18,9 +18,9 @@ require('./server/config/routes.js') (app,express);
 /*									Server   								 */
 //=============================================================================
 
-	var port = process.env.PORT || 4001;
+	var port = process.env.PORT || 4002;
 
 	app.listen(port);
 		
-	
+	// 'mongodb://mais:1234@ds019866.mlab.com:19866/adhouse';
 module.exports = app;

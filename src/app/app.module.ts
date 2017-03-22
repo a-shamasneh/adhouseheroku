@@ -30,6 +30,8 @@ import  {AdminService} from './admin.service';
 import { ApisComponent } from './apis/apis.component';
 
 import { AdvertismentComponent } from './advertisment/advertisment.component';
+import { ContactComponent } from './contact/contact.component';
+import { HelpdeskService } from './helpdesk.service';
 
 
 
@@ -74,7 +76,11 @@ const ROUTES = [
   {
     path:'advertisment/:id',
     component:AdvertismentComponent
-  } 
+  } ,
+  {
+    path:'Contact',
+    component:ContactComponent
+  }  
 
 ];
 @NgModule({
@@ -99,7 +105,9 @@ const ROUTES = [
 
     ApisComponent,
 
-    AdvertismentComponent
+    AdvertismentComponent,
+
+    ContactComponent
 
 
     
@@ -119,7 +127,7 @@ const ROUTES = [
   ],
 
 
-  providers: [AdminService,AddservService,GetaddService,userDataService,{ provide: LocationStrategy, useClass: HashLocationStrategy }, AuthService],
+  providers: [AdminService,AddservService,GetaddService,userDataService,{ provide: LocationStrategy, useClass: HashLocationStrategy }, AuthService,HelpdeskService],
 
   bootstrap: [AppComponent]
 })

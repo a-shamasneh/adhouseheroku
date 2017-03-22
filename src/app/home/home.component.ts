@@ -13,8 +13,9 @@ import { CategoriesPipe } from '../categories.pipe';
 export class HomeComponent implements OnInit {
   //pipes///
   
-  catgs:any = ["careers","cars","furniture","electronic","Other"];
-  advId:any; 
+  catgs:any = ["Scholorship","Food-Supplements","Fashion","Jobs","Cars&Bikes","Furniture","Real-Estate-For-Sale","Pets","Funny-Ads","Electronic","Baby-Kids","Other", "All"];
+  cities:any = ["Amman", "Irbid", "Jerash", "Ajloun", "Madaba", "Tafela", "Karak", "Zarqa" , "Maan", "Aqaba", "Mafraq", "All" ];
+  advId:any
 
 
     alladds:any;
