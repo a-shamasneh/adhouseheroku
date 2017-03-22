@@ -3,7 +3,7 @@ var AdvController = require ('../database/advertisments/AdvController.js');
 var CommentController = require ('../database/comment/CommentController.js');
 var ApiController=require('../database/Api/ApiUserController.js');
 var ApiController=require('../database/Api/ApiUserController.js');
-var RatingController = require('../DataBase/Rating/RatingController.js');
+var RatingController = require('../database/Rating/RatingController.js');
 var HelpDesk=require('./helpdesk.js');
 module.exports = function (app, express) {
 	
