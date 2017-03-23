@@ -21,8 +21,9 @@ export class HomeComponent implements OnInit {
     alladds:any;
   constructor(private Get:GetaddService) {
   this.Get.getalladv().subscribe(ok=>{
-    this.alladds=ok
+    this.alladds=ok.reverse()
     console.log(this.alladds)
+    
   });
    }
   ngOnInit() {

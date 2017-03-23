@@ -122,8 +122,9 @@ h5{
     text-align: center;
 }
 .desc{
+    color: blue;
     font-size: larger;
-    color: cadetblue;
+    font-family: cursive;
 }
 .imgadv{
 height: 100%;
