@@ -31,7 +31,9 @@ export class CategoriesPipe implements PipeTransform {
 
 	transform(alladds: any, term?: any, condition?:any): any {
 
-		
+		if(term== "All"&& condition == "All") return alladds;
+		if(term== undefined&& condition == "All") return alladds;
+		if(term== "All"&& condition ==undefined) return alladds;
 
 		if(term=== undefined && condition === undefined) return alladds;
 

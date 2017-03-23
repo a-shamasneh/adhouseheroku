@@ -429,6 +429,12 @@ var AdvertismentComponent = (function () {
         this.user.getAdvInfo(this.id).subscribe(function (ok) {
             _this.advdata = ok;
         });
+        this.user.getCommById(this.id).subscribe(function (data) {
+            // this.comments = data.reverse() ;
+            // this.comId = data[0]._id;
+            console.log(data);
+            _this.comments = data.reverse();
+        });
     }
     // ******** Comment functions ********* 
     AdvertismentComponent.prototype.commentAuth = function (id) {
@@ -455,18 +461,18 @@ var AdvertismentComponent = (function () {
     };
     AdvertismentComponent.prototype.insertComment = function () {
         var _this = this;
-        this.userId = localStorage.getItem('id');
-        this.userId = JSON.parse(this.userId);
         var newCom = {
             userId: this.userId,
             advId: this.id,
             text: this.com
         };
         this.user.InsertCom(newCom).subscribe(function (Done) {
-            _this.inserted = Done;
-            _this.com = '';
+            console.log(Done);
+            // this.inserted= Done ;
+            //   this.com ='';
             _this.comments.push(Done);
-            _this.refreshCom();
+            // console.log(this.comments)
+            // this.refreshCom()
         });
     };
     AdvertismentComponent.prototype.deleteComment = function (id) {
@@ -534,13 +540,8 @@ var AdvertismentComponent = (function () {
         });
     };
     AdvertismentComponent.prototype.ngOnInit = function () {
-        var _this = this;
         // retrive all comment(s) for this advertisment order by most recent  .
-        this.user.getCommById(this.id).subscribe(function (data) {
-            _this.comments = data.reverse();
-            _this.comId = data[0]._id;
-            console.log(data);
-        });
+        var _this = this;
         this.user.getAllRatingByAdID(this.id).subscribe(function (data) {
             if (typeof (data) === 'string') {
                 _this.AvgRating = 0;
@@ -966,6 +967,12 @@ var CategoriesPipe = (function () {
     function CategoriesPipe() {
     }
     CategoriesPipe.prototype.transform = function (alladds, term, condition) {
+        if (term == "All" && condition == "All")
+            return alladds;
+        if (term == undefined && condition == "All")
+            return alladds;
+        if (term == "All" && condition == undefined)
+            return alladds;
         if (term === undefined && condition === undefined)
             return alladds;
         if (term === undefined && condition) {
@@ -1609,7 +1616,7 @@ exports = module.exports = __webpack_require__(12)();
 
 
 // module
-exports.push([module.i, "img{\r\n  width: 356px;\r\n  height: 280px;\r\n}\r\n\r\nbody {\r\n  min-height: 75rem; /* Can be removed; just added for demo purposes */\r\n}\r\n\r\n\r\n\r\n.jumbotron {\r\n  padding-top: 6rem;\r\n  padding-bottom: 6rem;\r\n  margin-bottom: 0;\r\n  background-color: #fff;\r\n}\r\n\r\n.jumbotron p:last-child {\r\n  margin-bottom: 0;\r\n}\r\n\r\n.jumbotron-heading {\r\n  font-weight: 300;\r\n  text-align:center;\r\n}\r\n\r\n.jumbotron .container {\r\n  max-width: 40rem;\r\n}\r\n\r\n.lead {\r\n  text-align:center;\r\n}\r\n\r\n.button {\r\n   text-align:center;\r\n   display: inline-block;\r\n}\r\n\r\n.album {\r\n  min-height: 50rem; /* Can be removed; just added for demo purposes */\r\n  padding-top: 3rem;\r\n  padding-bottom: 3rem;\r\n  background-color: #f7f7f7;\r\n}\r\n\r\n.card {\r\n  float: left;\r\n  width: 33.333%;\r\n  padding: .75rem;\r\n  margin-bottom: 2rem;\r\n  border: 0;\r\n}\r\n\r\n.card > img {\r\n  margin-bottom: .75rem;\r\n}\r\n\r\n.card-text {\r\n  font-size: 85%;\r\n}\r\n\r\n.media-heading {\r\n  font-size : ;\r\n}", ""]);
+exports.push([module.i, "img{\r\n  width: 356px;\r\n  height: 280px;\r\n}\r\n\r\nbody {\r\n  min-height: 75rem; /* Can be removed; just added for demo purposes */\r\n}\r\n\r\n\r\n\r\n.jumbotron {\r\n  padding-top: 6rem;\r\n  padding-bottom: 6rem;\r\n  margin-bottom: 0;\r\n  background-color: #fff;\r\n}\r\n\r\n.jumbotron p:last-child {\r\n  margin-bottom: 0;\r\n}\r\n\r\n.jumbotron-heading {\r\n  font-weight: 300;\r\n  text-align:center;\r\n}\r\n\r\n.jumbotron .container {\r\n  max-width: 40rem;\r\n}\r\n\r\n.lead {\r\n  text-align:center;\r\n}\r\n\r\n.button {\r\n   text-align:center;\r\n   display: inline-block;\r\n}\r\n\r\n.album {\r\n  min-height: 50rem; /* Can be removed; just added for demo purposes */\r\n  padding-top: 3rem;\r\n  padding-bottom: 3rem;\r\n  background-color: #f7f7f7;\r\n}\r\n\r\n.card {\r\n  float: left;\r\n  width: 33.333%;\r\n  padding: .75rem;\r\n  margin-bottom: 2rem;\r\n  border: 0;\r\n}\r\n\r\n.card > img {\r\n  margin-bottom: .75rem;\r\n}\r\n\r\n.card-text {\r\n  font-size: 85%;\r\n}\r\n\r\n.media-heading {\r\n  font-size : ;\r\n}\r\n.info{\r\n      color: black;\r\n    font-size: 1.4em;\r\n}", ""]);
 
 // exports
 
@@ -1743,7 +1750,7 @@ module.exports = "\r\n\t\r\n\t<footer class=\"footer\">\r\n  <div class=\"contai
 /***/ 555:
 /***/ (function(module, exports) {
 
-module.exports = " <!-- <section class=\"jumbotron text-center\">\r\n      <div class=\"container\">\r\n        <h1 class=\"jumbotron-heading\">AdHouse </h1>\r\n        <p class=\"lead text-muted\">One place, all your needs</p>\r\n         \r\n        <p class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose category</a>\r\n          <select  [(ngModel)]=\"term\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let cat of catgs \">{{cat}}</option>\r\n        </select>\r\n          \r\n        </p>\r\n      </div>\r\n    </section>\r\n\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-4 center\" *ngFor=\"let ad of alladds | filter: term\"  >\r\n            <img data-src=\"{{ad.ad_img}}\" alt=\"Card image cap\">\r\n\r\n            <div class=\"card-text\">\r\n                <div class=\"media-heading\">{{ad.ad_date}}</div>\r\n                <div>Category : {{ad.ad_cat}}</div>\r\n                <div>Location: {{ad.ad_loc}}</div>\r\n                <div>Description: {{ad.ad_desc}}</div>\r\n                <div> Contact : {{ad.ad_phone}}</div>\r\n                <div class=\"center\">\r\n      <a  class=\"navbar-brand\" href=\"#\" (click) = \"advertId(ad._id)\"       \r\n      [routerLink]=\"['/advertisment/'+ad._id]\"  >Comments</a>\r\n                </div>\r\n                \r\n            </div>\r\n\r\n          </div>\r\n        </div>\r\n    </div>\r\n    </div>\r\n\r\n\r\n\r\n -->\r\n\r\n<section class=\"jumbotron text-center\">\r\n      <div class=\"container\">\r\n        <h1 class=\"jumbotron-heading\">AdHouse </h1>\r\n        <p class=\"lead text-muted\">One place, all your needs</p>\r\n         \r\n        <div col-md-3 class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose category</a>\r\n         </div>\r\n          <div col-md-3 class = \"button\">\r\n          <select col-md-2  [(ngModel)]=\"term\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let cat of catgs \">{{cat}}</option>\r\n        </select>\r\n        </div>\r\n          <div col-md-3 class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose city</a>\r\n          </div>\r\n          <div col-md-3 class = \"button\">\r\n          <select  [(ngModel)]=\"condition\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let city of cities \">{{city}}</option>\r\n        </select>\r\n          \r\n        </div>\r\n\r\n      </div>      \r\n    </section>\r\n\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-4\" *ngFor=\"let ad of alladds | filter: term: condition \"  >\r\n            <img data-src=\"{{ad.ad_img}}\" alt=\"Card image cap\">\r\n\r\n            <div class=\"card-text\">\r\n                <div class=\"media-heading\">{{ad.ad_date}}</div>\r\n                <div>Category : {{ad.ad_cat}}</div>\r\n                <div>Location: {{ad.ad_loc}}</div>\r\n                <div>Description: {{ad.ad_desc}}</div>\r\n                <div> Contact : {{ad.ad_phone}}</div>\r\n                <li>\r\n      <a  class=\"navbar-brand\" href=\"#\" (click) = \"advertId(ad._id)\"       \r\n      [routerLink]=\"['/advertisment/'+ad._id]\"  >Comments</a>\r\n                </li>\r\n                <br>\r\n            </div>\r\n\r\n          </div>\r\n        </div>\r\n    </div>\r\n    </div>"
+module.exports = "\r\n\r\n<section class=\"jumbotron text-center\">\r\n      <div class=\"container\">\r\n        <h1 class=\"jumbotron-heading\">AdHouse </h1>\r\n        <p class=\"lead text-muted\">One place, all your needs</p>\r\n         \r\n        <div col-md-3 class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose category</a>\r\n         </div>\r\n          <div col-md-3 class = \"button\">\r\n          <select col-md-2  [(ngModel)]=\"term\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let cat of catgs \">{{cat}}</option>\r\n        </select>\r\n        </div>\r\n          <div col-md-3 class = \"button\">\r\n          <a href=\"#\" class=\"btn btn-primary\">Choose city</a>\r\n          </div>\r\n          <div col-md-3 class = \"button\">\r\n          <select  [(ngModel)]=\"condition\" class=\"btn btn-secondary\" >\r\n\r\n         <option  *ngFor=\"let city of cities \">{{city}}</option>\r\n        </select>\r\n          \r\n        </div>\r\n\r\n      </div>      \r\n    </section>\r\n\r\n    <div class=\"album text-muted\">\r\n      <div class=\"container\">\r\n\r\n        <div class=\"row\">\r\n          <div  class=\"col-md-4 info\" *ngFor=\"let ad of alladds | filter: term: condition \"  >\r\n            <img data-src=\"{{ad.ad_img}}\" alt=\"Card image cap\">\r\n\r\n            <div class=\"card-text\">\r\n                <div class=\"media-heading\">{{ad.ad_date}}</div>\r\n                <div>Category : {{ad.ad_cat}}</div>\r\n                <div>Location: {{ad.ad_loc}}</div>\r\n                <div>Description: {{ad.ad_desc}}</div>\r\n                <div> Contact : {{ad.ad_phone}}</div>\r\n               \r\n      <a  class=\"navbar-brand\" href=\"#\" (click) = \"advertId(ad._id)\"       \r\n      [routerLink]=\"['/advertisment/'+ad._id]\" >More info</a>\r\n               \r\n                <br>\r\n            </div>\r\n\r\n          </div>\r\n        </div>\r\n    </div>\r\n    </div>"
 
 /***/ }),
 

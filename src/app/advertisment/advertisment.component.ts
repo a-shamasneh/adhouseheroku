@@ -34,9 +34,17 @@ export class AdvertismentComponent implements OnInit {
       this.url = this.route.params.subscribe( params=> {
          this.id = params['id'];
          console.log(this.id);
+
     })
       this.user.getAdvInfo(this.id).subscribe( ok=>{
              this.advdata = ok;
+      })
+      this.user.getCommById(this.id).subscribe( data =>{
+
+              // this.comments = data.reverse() ;
+              // this.comId = data[0]._id;
+              console.log(data)
+              this.comments=data.reverse()
       })
    }
 
@@ -67,18 +75,19 @@ export class AdvertismentComponent implements OnInit {
    }
   
   insertComment(){
-    this.userId =localStorage.getItem('id');
-    this.userId =JSON.parse(this.userId);
+    
      let newCom = {
        userId:this.userId,
        advId:this.id,
        text:this.com
      }
      this.user.InsertCom(newCom).subscribe(Done => {
-       this.inserted = Done ;
-      this.com ='';
-      this.comments.push(Done)
-       this.refreshCom()
+       console.log(Done)
+    // this.inserted= Done ;
+    //   this.com ='';
+        this.comments.push(Done)
+       // console.log(this.comments)
+       // this.refreshCom()
     })
   }
   
@@ -155,11 +164,7 @@ export class AdvertismentComponent implements OnInit {
   ngOnInit() {
 
         // retrive all comment(s) for this advertisment order by most recent  .
-          this.user.getCommById(this.id).subscribe( data =>{
-              this.comments = data.reverse() ;
-              this.comId = data[0]._id;
-              console.log(data)
-      })
+          
 
           this.user.getAllRatingByAdID(this.id).subscribe( data =>{
               if (typeof(data) === 'string') {
