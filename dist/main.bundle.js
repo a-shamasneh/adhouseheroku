@@ -344,7 +344,9 @@ var AdminComponent = (function () {
     function AdminComponent(Admin) {
         var _this = this;
         this.Admin = Admin;
-        if (JSON.parse(localStorage.getItem('UserType')) === false) {
+        if (JSON.parse(localStorage.getItem('UserType'))) {
+        }
+        else {
             window.location.href = ("");
         }
         this.Admin.get().subscribe(function (ok) {
@@ -1291,6 +1293,11 @@ var ProfileComponent = (function () {
         this.changeDetectorRef = changeDetectorRef;
         this.aproved = 0;
         this.notAproved = 0;
+        if (localStorage.getItem("com.addhouse")) {
+        }
+        else {
+            window.location.href = ("");
+        }
         this.id = localStorage.getItem('id');
         this.user.profile(this.id).subscribe(function (ok) {
             _this.email = ok.email;

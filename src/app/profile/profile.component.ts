@@ -21,7 +21,12 @@ count:any;
 aproved: number = 0;
 notAproved: number = 0;
   constructor(private user:userDataService , private changeDetectorRef: ChangeDetectorRef) { 
-
+   if(localStorage.getItem("com.addhouse")){
+      
+    }
+    else{
+      window.location.href=("")
+    }
   	this.id =localStorage.getItem('id');
   		this.user.profile(this.id).subscribe( 
   			 ok=>{
